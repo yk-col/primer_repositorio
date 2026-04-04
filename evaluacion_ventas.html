@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación de Ventas — CONVERTIR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;font-size:14px;color:#1a1a1a;background:#f9f8ff;padding:1rem}
+.wrap{max-width:680px;margin:0 auto}
+.header{background:#0F6E56;border-radius:12px;padding:16px;margin-bottom:1rem}
+.header h2{color:#E1F5EE;font-size:15px;font-weight:600;margin-bottom:4px}
+.header p{color:#9FE1CB;font-size:12px}
+.datos-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.dato label,.pdv-wrap label,.reg-wrap label{font-size:12px;color:#555;display:block;margin-bottom:4px}
+.dato input,.pdv-wrap input{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff}
+.pdv-wrap,.reg-wrap{margin-bottom:10px}
+select{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff}
+.inst{font-size:12px;color:#555;padding:10px 14px;border-left:3px solid #0F6E56;background:#f0faf6;margin-bottom:1rem;line-height:1.6}
+.bloque{border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;margin-bottom:1.25rem;background:#fff}
+.bk-hdr{padding:10px 14px;border-bottom:1px solid #e0e0e0}
+.bk-badge{font-size:10px;font-weight:600;padding:2px 9px;border-radius:99px;display:inline-block;margin-bottom:3px}
+.bk-title{font-size:13px;font-weight:600}
+.bk1 .bk-hdr{background:#f0faf6} .bk1 .bk-badge{background:#E1F5EE;color:#085041} .bk1 .bk-title{color:#04342C}
+.bk2 .bk-hdr{background:#F5F4FE} .bk2 .bk-badge{background:#EEEDFE;color:#3C3489} .bk2 .bk-title{color:#26215C}
+.bk3 .bk-hdr{background:#FDF5E8} .bk3 .bk-badge{background:#FAEEDA;color:#633806} .bk3 .bk-title{color:#412402}
+.bk4 .bk-hdr{background:#FDF2EE} .bk4 .bk-badge{background:#FAECE7;color:#712B13} .bk4 .bk-title{color:#4A1B0C}
+.preg{padding:12px 14px;border-bottom:1px solid #f0f0f0}
+.preg:last-child{border-bottom:none}
+.p-num{font-size:10px;color:#999;margin-bottom:4px}
+.p-caso{background:#f8f7ff;border-left:3px solid #0F6E56;padding:8px 10px;border-radius:0 6px 6px 0;font-size:12px;color:#444;line-height:1.5;margin-bottom:8px}
+.p-text{font-size:13px;line-height:1.5;margin-bottom:10px;font-weight:500}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid #e0e0e0;border-radius:8px;cursor:pointer;font-size:12px;line-height:1.4}
+.opt:hover{background:#f0faf6}
+.opt input[type=radio]{margin-top:2px;accent-color:#0F6E56;flex-shrink:0}
+.opt.correcta{background:#EBF8F3;border-color:#0F6E56;color:#04342C}
+.opt.incorrecta{background:#FCEBEB;border-color:#A32D2D;color:#501313}
+.exp-box{font-size:11px;color:#555;font-style:italic;margin-top:6px;padding:6px 8px;background:#f0faf6;border-radius:6px;line-height:1.5;display:none}
+.btn-eval{width:100%;padding:12px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:1rem}
+.resultado{border:1px solid #e0e0e0;border-radius:12px;padding:16px;margin-top:1rem;display:none;background:#fff}
+.final-card{border:2px solid #0F6E56;border-radius:12px;padding:16px;text-align:center;margin-bottom:14px;background:#f0faf6}
+.fc-score{font-size:42px;font-weight:700;color:#0F6E56}
+.fc-badge{display:inline-block;padding:4px 14px;border-radius:99px;font-size:13px;font-weight:600;margin:6px 0}
+.fc-desc{font-size:12px;color:#444;line-height:1.5;margin-top:6px}
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.sc{background:#f5f5f5;border-radius:8px;padding:10px;text-align:center}
+.sc-val{font-size:20px;font-weight:700}
+.sc-lbl{font-size:11px;color:#666;margin-top:2px}
+.plan-section{background:#f0faf6;border:1px solid #0F6E56;border-radius:12px;padding:14px;margin-top:12px}
+.plan-title{font-size:14px;font-weight:600;color:#04342C;margin-bottom:10px}
+.plan-item{background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:8px;border-left:3px solid #0F6E56}
+.plan-item-title{font-size:12px;font-weight:600;color:#04342C;margin-bottom:4px}
+.plan-item-text{font-size:12px;color:#444;line-height:1.5}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.btn-pdf{padding:10px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-save{padding:10px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.save-status{font-size:11px;color:#666;margin-top:6px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+  <h2>Evaluación de conocimientos en ventas</h2>
+  <p>Spectrum Brands · EFICACIA S.A.S. · 20 preguntas · Conocimientos generales de ventas</p>
+</div>
+
+<div class="datos-grid">
+  <div class="dato"><label>Nombre completo</label><input type="text" id="nombre" placeholder="Tu nombre completo"></div>
+  <div class="dato"><label>Fecha</label><input type="date" id="fecha"></div>
+</div>
+<div class="reg-wrap">
+  <label>Regional</label>
+  <select id="regional">
+    <option value="">— Selecciona tu regional —</option>
+    <option value="Antioquia">Antioquia</option>
+    <option value="Centro">Centro</option>
+    <option value="Eje Cafetero">Eje Cafetero</option>
+    <option value="Norte">Norte</option>
+    <option value="Occidente">Occidente</option>
+    <option value="Oriente">Oriente</option>
+  </select>
+</div>
+<div class="pdv-wrap">
+  <label>Punto de venta</label>
+  <input type="text" id="pdv" placeholder="Nombre de la tienda / cadena">
+</div>
+
+<div class="inst">Responde cada pregunta basándote en lo que sabes sobre ventas y atención al cliente. No hay pistas sobre el tipo — responde con tu criterio y experiencia real.</div>
+
+<!-- BLOQUE 1 -->
+<div class="bloque bk1">
+  <div class="bk-hdr"><span class="bk-badge">Bloque 1</span><div class="bk-title">Conocimiento del producto y del mercado</div></div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 1</div>
+    <div class="p-text">Un cliente pregunta por qué debería comprar una aspiradora de 800W en lugar de una de 2000W que cuesta menos. ¿Cuál es la respuesta más técnicamente correcta?</div>
+    <div class="opts">
+      <label class="opt" id="o1-0"><input type="radio" name="p1" value="0"> La de 800W es mejor porque consume menos energía y tiene mayor tecnología de succión.</label>
+      <label class="opt" id="o1-1"><input type="radio" name="p1" value="1"> La potencia en watts no determina la eficiencia de succión — lo que importa es el sistema de filtración y los pascales de presión. Una de 800W con mejor tecnología puede superar a una de 2000W básica.</label>
+      <label class="opt" id="o1-2"><input type="radio" name="p1" value="2"> La de 2000W siempre aspira mejor porque tiene más potencia.</label>
+      <label class="opt" id="o1-3"><input type="radio" name="p1" value="3"> Los watts no importan — lo que importa es la marca.</label>
+    </div>
+    <div class="exp-box" id="exp1">La potencia en watts indica consumo eléctrico, no rendimiento de succión. Los pascales (Pa) y el sistema de filtración son los indicadores reales de eficiencia. Este es el tipo de argumento diferencial que un promotor técnico debe dominar.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 2</div>
+    <div class="p-text">¿Qué característica del canal moderno lo diferencia principalmente del canal tradicional en términos de comportamiento del consumidor?</div>
+    <div class="opts">
+      <label class="opt" id="o2-0"><input type="radio" name="p2" value="0"> El canal moderno tiene precios más bajos.</label>
+      <label class="opt" id="o2-1"><input type="radio" name="p2" value="1"> En el canal moderno el consumidor llega con mayor información previa, compara activamente entre marcas y espera una asesoría que añada valor más allá de lo que ya investigó.</label>
+      <label class="opt" id="o2-2"><input type="radio" name="p2" value="2"> El canal moderno tiene más variedad de productos.</label>
+      <label class="opt" id="o2-3"><input type="radio" name="p2" value="3"> En el canal moderno los clientes compran más rápido y sin preguntas.</label>
+    </div>
+    <div class="exp-box" id="exp2">El consumidor del canal moderno (supermercados, grandes superficies) llega habiendo investigado en internet. El promotor que solo repite especificaciones técnicas no agrega valor — el diferencial está en contextualizar el producto a la situación real del cliente.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 3</div>
+    <div class="p-caso">Un cliente compara una freidora de aire de tu portafolio con una de otra marca que tiene más funciones por el mismo precio.</div>
+    <div class="p-text">¿Cuál es la estrategia correcta de argumentación?</div>
+    <div class="opts">
+      <label class="opt" id="o3-0"><input type="radio" name="p3" value="0"> Decirle que la otra marca tiene problemas de calidad.</label>
+      <label class="opt" id="o3-1"><input type="radio" name="p3" value="1"> Explorar cuáles de esas funciones el cliente realmente va a usar, y demostrar que el producto tuyo hace bien exactamente lo que necesita, con mejor garantía y servicio postventa local.</label>
+      <label class="opt" id="o3-2"><input type="radio" name="p3" value="2"> Reconocer que la competencia es mejor y ofrecer un descuento.</label>
+      <label class="opt" id="o3-3"><input type="radio" name="p3" value="3"> Listar todas las características de tu producto sin mencionar la competencia.</label>
+    </div>
+    <div class="exp-box" id="exp3">Más funciones no significa más valor para ese cliente específico. El argumento ganador no ataca a la competencia — demuestra que lo que el cliente realmente necesita lo resuelve mejor tu producto.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 4</div>
+    <div class="p-text">¿Qué es el "valor percibido" de un producto y cómo lo aumenta un promotor durante la asesoría?</div>
+    <div class="opts">
+      <label class="opt" id="o4-0"><input type="radio" name="p4" value="0"> Es el precio del producto — se aumenta ofreciendo descuentos.</label>
+      <label class="opt" id="o4-1"><input type="radio" name="p4" value="1"> Es la percepción del cliente sobre lo que recibe vs. lo que paga — se aumenta conectando las características del producto con beneficios concretos y relevantes para la situación específica del cliente.</label>
+      <label class="opt" id="o4-2"><input type="radio" name="p4" value="2"> Es la calidad del producto — se aumenta mostrando las especificaciones técnicas.</label>
+      <label class="opt" id="o4-3"><input type="radio" name="p4" value="3"> Es la marca del producto — se aumenta hablando bien de la empresa fabricante.</label>
+    </div>
+    <div class="exp-box" id="exp4">El valor percibido no es el precio ni la calidad objetiva — es lo que el cliente cree que recibe. Un promotor que traduce características técnicas en beneficios de vida cotidiana aumenta el valor percibido sin bajar el precio.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 5</div>
+    <div class="p-text">Un cliente pregunta si el producto tiene garantía. ¿Cuál es la respuesta que genera más confianza?</div>
+    <div class="opts">
+      <label class="opt" id="o5-0"><input type="radio" name="p5" value="0"> "Sí, tiene garantía" (sin detalles adicionales).</label>
+      <label class="opt" id="o5-1"><input type="radio" name="p5" value="1"> Explicar exactamente qué cubre la garantía, por cuánto tiempo, cómo se hace efectiva y qué distingue el servicio postventa de esta marca versus otras — convirtiendo la garantía en un argumento de venta.</label>
+      <label class="opt" id="o5-2"><input type="radio" name="p5" value="2"> "Todos los productos aquí tienen garantía, no se preocupe."</label>
+      <label class="opt" id="o5-3"><input type="radio" name="p5" value="3"> Dar todos los detalles técnicos de la garantía sin relacionarlos con el beneficio para el cliente.</label>
+    </div>
+    <div class="exp-box" id="exp5">La garantía es uno de los argumentos de valor diferencial más poderosos en el canal moderno. Un promotor que convierte la garantía en un beneficio concreto ("si en 6 meses tiene algún problema, usted lo resuelve aquí mismo") cierra más ventas y genera más confianza.</div>
+  </div>
+</div>
+
+<!-- BLOQUE 2 -->
+<div class="bloque bk2">
+  <div class="bk-hdr"><span class="bk-badge">Bloque 2</span><div class="bk-title">Comprensión del cliente y diagnóstico</div></div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 6</div>
+    <div class="p-text">¿Cuál de las siguientes preguntas tiene mayor potencial para revelar la necesidad real de un cliente que busca una licuadora?</div>
+    <div class="opts">
+      <label class="opt" id="o6-0"><input type="radio" name="p6" value="0"> "¿Cuánto tiene pensado gastar?"</label>
+      <label class="opt" id="o6-1"><input type="radio" name="p6" value="1"> "¿Para qué la va a usar principalmente y qué le ha pasado con las licuadoras que ha tenido antes?"</label>
+      <label class="opt" id="o6-2"><input type="radio" name="p6" value="2"> "¿Ya conoce esta marca?"</label>
+      <label class="opt" id="o6-3"><input type="radio" name="p6" value="3"> "¿La quiere para uso personal o de regalo?"</label>
+    </div>
+    <div class="exp-box" id="exp6">La pregunta sobre uso y experiencia previa revela simultáneamente el contexto de uso, las frustraciones pasadas y las expectativas reales. Es una pregunta que abre la necesidad en profundidad, no la superficial.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 7</div>
+    <div class="p-caso">Un cliente entra mirando su celular, camina rápido entre los productos y cuando le preguntas responde con monosílabos.</div>
+    <div class="p-text">¿Qué tipo de cliente es y cómo adaptas tu acercamiento?</div>
+    <div class="opts">
+      <label class="opt" id="o7-0"><input type="radio" name="p7" value="0"> Es un cliente difícil — mejor dejarlo solo.</label>
+      <label class="opt" id="o7-1"><input type="radio" name="p7" value="1"> Es un cliente en modo exploración o con poco tiempo — adaptas con preguntas cerradas y directas, ofreces información clave en menos de 30 segundos y le das espacio para decidir el ritmo.</label>
+      <label class="opt" id="o7-2"><input type="radio" name="p7" value="2"> Es un cliente que ya sabe lo que quiere — vas directo al cierre.</label>
+      <label class="opt" id="o7-3"><input type="radio" name="p7" value="3"> Es un cliente desinteresado — no vale la pena invertir tiempo.</label>
+    </div>
+    <div class="exp-box" id="exp7">El promotor que lee el comportamiento del cliente y adapta su ritmo tiene mucho más éxito que el que aplica el mismo guión a todos. Un cliente con poco tiempo no necesita menos asesoría — necesita la misma calidad en menos palabras.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 8</div>
+    <div class="p-text">¿Qué significa que un cliente tenga una "necesidad latente" y cómo la identifica un promotor experto?</div>
+    <div class="opts">
+      <label class="opt" id="o8-0"><input type="radio" name="p8" value="0"> Es una necesidad que el cliente ya expresó claramente.</label>
+      <label class="opt" id="o8-1"><input type="radio" name="p8" value="1"> Es una necesidad que el cliente tiene pero no ha expresado o no sabe que tiene. Se identifica a través de preguntas sobre su situación de uso que revelan problemas que el cliente no había conectado con el producto.</label>
+      <label class="opt" id="o8-2"><input type="radio" name="p8" value="2"> Es una necesidad que el cliente no quiere satisfacer.</label>
+      <label class="opt" id="o8-3"><input type="radio" name="p8" value="3"> Es una necesidad futura que el cliente tendrá en algún momento.</label>
+    </div>
+    <div class="exp-box" id="exp8">Las necesidades latentes son el territorio de los promotores consultivos. Un cliente que dice "quiero una aspiradora" puede tener la necesidad latente de "quiero menos tiempo limpiando" — y eso cambia completamente cuál producto recomiendas.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 9</div>
+    <div class="p-caso">Un cliente joven acompañado de su madre compra una plancha de cabello. La madre tiene dudas sobre el precio y el joven quiere esa específicamente.</div>
+    <div class="p-text">¿Cómo manejas la dinámica de decisión?</div>
+    <div class="opts">
+      <label class="opt" id="o9-0"><input type="radio" name="p9" value="0"> Te enfocas solo en el joven porque él es el comprador.</label>
+      <label class="opt" id="o9-1"><input type="radio" name="p9" value="1"> Identificas que hay dos influenciadores con criterios diferentes, escuchas la preocupación de la madre (precio/durabilidad), construyes un argumento que satisfaga a los dos, y diriges el cierre cuando ambos estén alineados.</label>
+      <label class="opt" id="o9-2"><input type="radio" name="p9" value="2"> Le hablas principalmente a la madre porque ella tiene la objeción.</label>
+      <label class="opt" id="o9-3"><input type="radio" name="p9" value="3"> Los dejas decidir solos para no interferir.</label>
+    </div>
+    <div class="exp-box" id="exp9">En compras donde hay múltiples personas involucradas, el promotor que solo habla con el "comprador evidente" pierde la venta. Identificar quién influye en la decisión y cómo alinear esas perspectivas es una habilidad comercial avanzada.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 10</div>
+    <div class="p-text">Un cliente dice que "no necesita nada" pero lleva 8 minutos en la sección mirando productos. ¿Qué haces?</div>
+    <div class="opts">
+      <label class="opt" id="o10-0"><input type="radio" name="p10" value="0"> Lo dejas en paz — si dijo que no necesita nada, hay que respetarlo.</label>
+      <label class="opt" id="o10-1"><input type="radio" name="p10" value="1"> Reconoces que está explorando y te acercas con una observación natural sobre lo que está mirando ("ese modelo es interesante porque..."), sin preguntarle si necesita ayuda — simplemente abres una conversación.</label>
+      <label class="opt" id="o10-2"><input type="radio" name="p10" value="2"> Le preguntas de nuevo si necesita algo para ver si cambió de opinión.</label>
+      <label class="opt" id="o10-3"><input type="radio" name="p10" value="3"> Le muestras el producto más vendido de la sección para despertar interés.</label>
+    </div>
+    <div class="exp-box" id="exp10">El comportamiento del cliente (8 minutos mirando) contradice sus palabras ("no necesito nada"). El promotor experto lee el comportamiento, no solo las palabras, y genera una apertura natural sin hacer preguntas cerradas que dan lugar al "no".</div>
+  </div>
+</div>
+
+<!-- BLOQUE 3 -->
+<div class="bloque bk3">
+  <div class="bk-hdr"><span class="bk-badge">Bloque 3</span><div class="bk-title">Proceso de venta y argumentación</div></div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 11</div>
+    <div class="p-text">¿Cuál es la diferencia entre una característica, una ventaja y un beneficio de un producto?</div>
+    <div class="opts">
+      <label class="opt" id="o11-0"><input type="radio" name="p11" value="0"> Son tres formas distintas de decir lo mismo.</label>
+      <label class="opt" id="o11-1"><input type="radio" name="p11" value="1"> La característica describe lo que el producto es o tiene (motor de 1200W), la ventaja explica por qué eso es mejor que otras opciones (más potencia que el promedio del mercado), y el beneficio traduce eso en valor real para el cliente (su ropa quedará más suave en menos tiempo).</label>
+      <label class="opt" id="o11-2"><input type="radio" name="p11" value="2"> La característica es lo técnico, la ventaja es el precio y el beneficio es la garantía.</label>
+      <label class="opt" id="o11-3"><input type="radio" name="p11" value="3"> Solo importan las características — los clientes toman decisiones racionales.</label>
+    </div>
+    <div class="exp-box" id="exp11">Esta es la base de la argumentación consultiva. Un promotor que solo habla de características está hablando del producto. Uno que habla de beneficios está hablando del cliente — y eso cierra ventas.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 12</div>
+    <div class="p-caso">Llevas una asesoría de 12 minutos. El cliente parece convencido pero no da el paso de comprar.</div>
+    <div class="p-text">¿Cuál es la señal de compra más clara y cómo actúas?</div>
+    <div class="opts">
+      <label class="opt" id="o12-0"><input type="radio" name="p12" value="0"> Cuando el cliente pregunta por el precio por segunda vez.</label>
+      <label class="opt" id="o12-1"><input type="radio" name="p12" value="1"> Cuando el cliente hace preguntas sobre detalles prácticos post-compra (garantía, instalación, dónde pagar, si viene con accesorios) — eso indica que ya se imaginó llevándolo. En ese momento propones el cierre de forma natural.</label>
+      <label class="opt" id="o12-2"><input type="radio" name="p12" value="2"> Cuando el cliente sonríe y dice que le gusta el producto.</label>
+      <label class="opt" id="o12-3"><input type="radio" name="p12" value="3"> Cuando el cliente lleva más de 10 minutos en la conversación.</label>
+    </div>
+    <div class="exp-box" id="exp12">Las preguntas post-compra son la señal más confiable de que el cliente ya decidió internamente. El promotor que reconoce ese momento y propone el cierre ahí tiene la tasa de conversión más alta.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 13</div>
+    <div class="p-text">Un cliente dice "lo pienso" y empieza a alejarse. ¿Cuál es la respuesta más efectiva?</div>
+    <div class="opts">
+      <label class="opt" id="o13-0"><input type="radio" name="p13" value="0"> "Claro, con gusto" y lo dejas ir.</label>
+      <label class="opt" id="o13-1"><input type="radio" name="p13" value="1"> "Entiendo perfectamente. Antes de que se vaya, ¿hay alguna duda específica que no hayamos resuelto? A veces cuando los clientes dicen 'lo pienso' es porque algo no quedó del todo claro."</label>
+      <label class="opt" id="o13-2"><input type="radio" name="p13" value="2"> Bajarle el precio para retenerlo.</label>
+      <label class="opt" id="o13-3"><input type="radio" name="p13" value="3"> Decirle que la promoción termina hoy para crear urgencia.</label>
+    </div>
+    <div class="exp-box" id="exp13">"Lo pienso" es casi siempre una objeción no verbalizada. El promotor que pregunta directamente qué duda queda tiene hasta un 40% de posibilidad de reactivar la conversación — sin presionar, sin mentir sobre promociones.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 14</div>
+    <div class="p-text">¿Cuándo es apropiado ofrecer un descuento durante una asesoría de ventas?</div>
+    <div class="opts">
+      <label class="opt" id="o14-0"><input type="radio" name="p14" value="0"> Siempre que el cliente lo pida, para no perder la venta.</label>
+      <label class="opt" id="o14-1"><input type="radio" name="p14" value="1"> Solo cuando hay una política comercial vigente que lo autoriza, y preferiblemente como último recurso después de haber agotado los argumentos de valor — no como primera respuesta a una objeción de precio.</label>
+      <label class="opt" id="o14-2"><input type="radio" name="p14" value="2"> Nunca — los precios son fijos y no se negocian.</label>
+      <label class="opt" id="o14-3"><input type="radio" name="p14" value="3"> Al inicio de la conversación para captar la atención del cliente.</label>
+    </div>
+    <div class="exp-box" id="exp14">El descuento como primera respuesta destruye el valor percibido y enseña al cliente a siempre pedir rebaja. El promotor consultivo usa el precio solo cuando el valor ya está bien argumentado y la objeción es genuinamente de presupuesto.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 15</div>
+    <div class="p-caso">Un cliente compra un electrodoméstico de $450.000. Al hacer el resumen de la compra, ¿qué debes hacer antes de que se vaya?</div>
+    <div class="p-text">¿Cuál es la acción post-cierre más importante?</div>
+    <div class="opts">
+      <label class="opt" id="o15-0"><input type="radio" name="p15" value="0"> Despedirte y atender al siguiente cliente.</label>
+      <label class="opt" id="o15-1"><input type="radio" name="p15" value="1"> Reforzar que tomó una excelente decisión, darle una orientación breve sobre cómo sacarle el mayor provecho al producto (primer uso, mantenimiento básico) y recordarle que puede volver si tiene cualquier duda — reduciendo la posibilidad de arrepentimiento post-compra.</label>
+      <label class="opt" id="o15-2"><input type="radio" name="p15" value="2"> Ofrecerle más productos adicionales aprovechando que ya está en modo compra.</label>
+      <label class="opt" id="o15-3"><input type="radio" name="p15" value="3"> Pedirle que recomiende la tienda con sus contactos.</label>
+    </div>
+    <div class="exp-box" id="exp15">El arrepentimiento post-compra (buyer's remorse) es uno de los principales causantes de devoluciones. Un promotor que refuerza la decisión del cliente al final reduce devoluciones, genera confianza y construye una relación de largo plazo.</div>
+  </div>
+</div>
+
+<!-- BLOQUE 4 -->
+<div class="bloque bk4">
+  <div class="bk-hdr"><span class="bk-badge">Bloque 4</span><div class="bk-title">Ética comercial, servicio y situaciones avanzadas</div></div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 16</div>
+    <div class="p-text">¿Cuál es la diferencia entre persuadir y manipular en una venta?</div>
+    <div class="opts">
+      <label class="opt" id="o16-0"><input type="radio" name="p16" value="0"> No hay diferencia — toda venta implica influir en el cliente.</label>
+      <label class="opt" id="o16-1"><input type="radio" name="p16" value="1"> Persuadir es presentar argumentos reales y relevantes que ayudan al cliente a tomar una mejor decisión para él. Manipular es usar información falsa, urgencia artificial o presión emocional para que el cliente decida en beneficio del vendedor, no de sí mismo.</label>
+      <label class="opt" id="o16-2"><input type="radio" name="p16" value="2"> Persuadir es para ventas grandes; manipular es para ventas pequeñas.</label>
+      <label class="opt" id="o16-3"><input type="radio" name="p16" value="3"> La manipulación funciona mejor a corto plazo y la persuasión a largo plazo.</label>
+    </div>
+    <div class="exp-box" id="exp16">Esta distinción es central en la venta consultiva. Un promotor que manipula puede cerrar una venta pero pierde al cliente para siempre. Uno que persuade con argumentos reales construye una base de clientes que regresan y recomiendan.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 17</div>
+    <div class="p-caso">Después de 15 minutos de asesoría, concluyes que ninguno de los productos de tu portafolio realmente resuelve bien la necesidad del cliente.</div>
+    <div class="p-text">¿Qué haces?</div>
+    <div class="opts">
+      <label class="opt" id="o17-0"><input type="radio" name="p17" value="0"> Vendes el que más se acerca aunque no sea ideal.</label>
+      <label class="opt" id="o17-1"><input type="radio" name="p17" value="1"> Se lo dices honestamente al cliente, explicas cuál de los disponibles es la opción más cercana a su necesidad y qué limitaciones tiene, y lo dejas decidir con información completa. Eso construye confianza que vale más que una venta forzada.</label>
+      <label class="opt" id="o17-2"><input type="radio" name="p17" value="2"> Exageras los beneficios del producto más cercano para convencerlo.</label>
+      <label class="opt" id="o17-3"><input type="radio" name="p17" value="3"> Terminas la conversación rápidamente para no perder más tiempo.</label>
+    </div>
+    <div class="exp-box" id="exp17">La honestidad comercial no es ingenuidad — es la inversión más rentable. Un cliente al que le dijiste la verdad aunque no compraste ese día tiene alta probabilidad de volver cuando el producto correcto esté disponible o cuando tenga otra necesidad.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 18</div>
+    <div class="p-caso">Un compañero promotor usa estrategias que no son éticas para cerrar ventas (exagera beneficios, miente sobre promociones) y tiene mejores números que tú ese mes.</div>
+    <div class="p-text">¿Cómo evalúas esa situación desde una perspectiva profesional?</div>
+    <div class="opts">
+      <label class="opt" id="o18-0"><input type="radio" name="p18" value="0"> Adoptas sus estrategias porque los resultados son lo que importa.</label>
+      <label class="opt" id="o18-1"><input type="radio" name="p18" value="1"> Reconoces que esos resultados son cortoplacistas: generan devoluciones, quejas, pérdida de confianza de la marca y eventualmente pérdida del puesto. Tu enfoque consultivo construye resultados sostenibles aunque sea más lento al inicio.</label>
+      <label class="opt" id="o18-2"><input type="radio" name="p18" value="2"> No es tu problema — cada quien tiene su estilo de venta.</label>
+      <label class="opt" id="o18-3"><input type="radio" name="p18" value="3"> Le reportas a tu supervisor inmediatamente.</label>
+    </div>
+    <div class="exp-box" id="exp18">Las ventas no éticas tienen un costo oculto muy alto: devoluciones, reclamos, pérdida de reputación de la marca y eventualmente rotación del promotor. La venta consultiva puede tardar más en arrancar pero genera resultados más sólidos y sostenibles.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 19</div>
+    <div class="p-text">¿Qué indica cuando la tasa de devoluciones de un promotor es significativamente más alta que la del resto del equipo?</div>
+    <div class="opts">
+      <label class="opt" id="o19-0"><input type="radio" name="p19" value="0"> Que tiene mala suerte con los clientes.</label>
+      <label class="opt" id="o19-1"><input type="radio" name="p19" value="1"> Que hay una falla sistemática en el diagnóstico de necesidades durante la asesoría: los clientes están comprando productos que no se ajustan a lo que realmente necesitan.</label>
+      <label class="opt" id="o19-2"><input type="radio" name="p19" value="2"> Que los productos que vende tienen problemas de calidad.</label>
+      <label class="opt" id="o19-3"><input type="radio" name="p19" value="3"> Que los clientes de su zona son más exigentes.</label>
+    </div>
+    <div class="exp-box" id="exp19">La tasa de devoluciones es uno de los indicadores más honestos de la calidad de la asesoría. Alta devolución casi siempre significa que se vendió el producto equivocado para la necesidad real — lo que apunta directamente a la etapa de diagnóstico.</div>
+  </div>
+
+  <div class="preg">
+    <div class="p-num">Pregunta 20</div>
+    <div class="p-text">¿Cuál es el indicador más confiable del desempeño consultivo de un promotor a largo plazo?</div>
+    <div class="opts">
+      <label class="opt" id="o20-0"><input type="radio" name="p20" value="0"> El número de unidades vendidas por día.</label>
+      <label class="opt" id="o20-1"><input type="radio" name="p20" value="1"> La combinación de: tasa de conversión consistente, baja tasa de devoluciones, y clientes que regresan o refieren a otros — porque eso indica que la asesoría genera valor real y sostenible.</label>
+      <label class="opt" id="o20-2"><input type="radio" name="p20" value="2"> El ticket promedio de sus ventas.</label>
+      <label class="opt" id="o20-3"><input type="radio" name="p20" value="3"> El tiempo promedio por cliente atendido.</label>
+    </div>
+    <div class="exp-box" id="exp20">Un promotor verdaderamente consultivo tiene tres señales: convierte consistentemente (no en picos), devuelven poco (vendió bien) y los clientes regresan (generó confianza). Esos tres juntos son el indicador más robusto de excelencia comercial.</div>
+  </div>
+</div>
+
+<button class="btn-eval" onclick="evaluar()">Ver mi resultado final</button>
+
+<div class="resultado" id="resultado">
+  <div class="final-card">
+    <div style="font-size:12px;color:#444;margin-bottom:4px">Promedio final</div>
+    <div class="fc-score" id="fc-score">—</div>
+    <div id="fc-badge-wrap"></div>
+    <div class="fc-desc" id="fc-desc"></div>
+  </div>
+  <div class="stats4">
+    <div class="sc"><div class="sc-val" id="sc-ok" style="color:#0F6E56">—</div><div class="sc-lbl">Correctas</div></div>
+    <div class="sc"><div class="sc-val" id="sc-err" style="color:#A32D2D">—</div><div class="sc-lbl">Incorrectas</div></div>
+    <div class="sc"><div class="sc-val" id="sc-pct">—</div><div class="sc-lbl">Porcentaje</div></div>
+    <div class="sc"><div class="sc-val" id="sc-tot">—</div><div class="sc-lbl">Respondidas</div></div>
+  </div>
+  <div class="plan-section" id="plan-section">
+    <div class="plan-title">Plan de trabajo individualizado</div>
+    <div id="plan-items"></div>
+  </div>
+  <div class="btns">
+    <button class="btn-pdf" onclick="descargarPDF()">Descargar plan en PDF</button>
+    <button class="btn-save" onclick="guardarDatos()">Guardar en base de datos</button>
+  </div>
+  <div class="save-status" id="save-status"></div>
+</div>
+</div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/TU_SCRIPT_ID_AQUI/exec';
+const correctas = {p1:1,p2:1,p3:1,p4:1,p5:1,p6:1,p7:1,p8:1,p9:1,p10:1,p11:1,p12:1,p13:1,p14:1,p15:1,p16:1,p17:1,p18:1,p19:1,p20:1};
+const bloqueMap = {p1:'b1',p2:'b1',p3:'b1',p4:'b1',p5:'b1',p6:'b2',p7:'b2',p8:'b2',p9:'b2',p10:'b2',p11:'b3',p12:'b3',p13:'b3',p14:'b3',p15:'b3',p16:'b4',p17:'b4',p18:'b4',p19:'b4',p20:'b4'};
+const bloqueNames = {b1:'Conocimiento del producto',b2:'Comprensión del cliente',b3:'Proceso de venta',b4:'Ética comercial'};
+
+const niveles = [
+  {min:0,max:49,label:'En desarrollo',c:'#A32D2D',bg:'#FCEBEB',desc:'Hay conocimientos fundamentales de ventas que necesitan refuerzo urgente.'},
+  {min:50,max:64,label:'En proceso',c:'#854F0B',bg:'#FAEEDA',desc:'Base parcial de conocimientos. Hay áreas específicas que necesitas consolidar.'},
+  {min:65,max:79,label:'Competente',c:'#185FA5',bg:'#E6F1FB',desc:'Buen conocimiento general de ventas. Enfócate en aplicarlo consistentemente.'},
+  {min:80,max:100,label:'Destacado',c:'#0F6E56',bg:'#E1F5EE',desc:'Sólido dominio de los principios de venta consultiva. Eres referente del equipo.'}
+];
+
+const planes = {
+  b1: {
+    alta: {titulo:'Conocimiento de producto: refuerzo urgente', acciones:['Estudia las fichas técnicas completas de cada producto del portafolio esta semana','Practica explicar cada producto en máximo 3 beneficios concretos para el cliente','Aprende los 2 argumentos diferenciales clave vs. competencia directa por categoría']},
+    media: {titulo:'Conocimiento de producto: consolidar argumentación', acciones:['Practica traducir características técnicas en beneficios de vida cotidiana','Prepara respuestas a las 5 preguntas técnicas más frecuentes de clientes']},
+    baja: {titulo:'Conocimiento de producto: mantener y profundizar', acciones:['Investiga tendencias de la categoría para agregar contexto a tus argumentos','Comparte tu conocimiento con promotores de menor experiencia']}
+  },
+  b2: {
+    alta: {titulo:'Diagnóstico de cliente: refuerzo urgente', acciones:['Practica hacer al menos 2 preguntas abiertas antes de mostrar cualquier producto','Aprende a identificar los 4 perfiles de cliente más comunes en tu PDV','Ejercita leer señales no verbales: postura, ritmo, contacto visual']},
+    media: {titulo:'Diagnóstico de cliente: profundizar', acciones:['Trabaja en identificar necesidades latentes detrás de lo que el cliente dice','Practica adaptar tu velocidad y estilo al perfil del cliente']},
+    baja: {titulo:'Diagnóstico de cliente: aplicación avanzada', acciones:['Enfócate en necesidades latentes y dinámicas de decisión grupal','Documenta los perfiles de cliente más complejos que hayas manejado']}
+  },
+  b3: {
+    alta: {titulo:'Proceso de venta: refuerzo urgente', acciones:['Aprende la diferencia entre característica, ventaja y beneficio y practica aplicarla','Trabaja en reconocer señales de compra antes de proponer el cierre','Elimina el descuento como primera respuesta a objeciones de precio']},
+    media: {titulo:'Proceso de venta: consolidar', acciones:['Practica el cierre natural vinculado a la necesidad identificada','Trabaja el manejo de "lo pienso" con preguntas que abran la objeción real']},
+    baja: {titulo:'Proceso de venta: optimizar', acciones:['Enfócate en reducir tu tasa de devoluciones como indicador de calidad de asesoría','Comparte tus técnicas de cierre consultivo con el equipo']}
+  },
+  b4: {
+    alta: {titulo:'Ética comercial: refuerzo urgente', acciones:['Revisa la diferencia entre persuadir y manipular en ventas','Comprende el impacto de largo plazo de las ventas no éticas en tu carrera','Compromete con un código personal de ética comercial']},
+    media: {titulo:'Ética comercial: fortalecer', acciones:['Analiza casos donde la honestidad construyó más valor que una venta forzada','Practica reconocer cuando un producto no es el adecuado y cómo comunicarlo']},
+    baja: {titulo:'Ética comercial: mantener estándar', acciones:['Sé referente de ética comercial en tu equipo','Documenta casos donde la venta ética generó clientes de largo plazo']}
+  }
+};
+
+let gData = {};
+
+function evaluar() {
+  const bloquePcts = {b1:0,b2:0,b3:0,b4:0};
+  const bloqueTot = {b1:0,b2:0,b3:0,b4:0};
+  let ok = 0, total = 0;
+
+  for (let i = 1; i <= 20; i++) {
+    const sel = document.querySelector(`input[name="p${i}"]:checked`);
+    if (!sel) continue;
+    total++;
+    const v = parseInt(sel.value);
+    const correct = v === correctas['p'+i];
+    if (correct) { ok++; bloquePcts[bloqueMap['p'+i]]++; }
+    bloqueTot[bloqueMap['p'+i]]++;
+    for (let j = 0; j <= 3; j++) {
+      const lbl = document.getElementById(`o${i}-${j}`);
+      if (!lbl) continue;
+      if (j === correctas['p'+i]) lbl.classList.add('correcta');
+      else if (j === v && !correct) lbl.classList.add('incorrecta');
+    }
+    const expEl = document.getElementById('exp'+i);
+    if (expEl) expEl.style.display = 'block';
+  }
+
+  const pct = total ? Math.round((ok/total)*100) : 0;
+  document.getElementById('resultado').style.display = 'block';
+  document.getElementById('fc-score').textContent = pct + '%';
+  document.getElementById('sc-ok').textContent = ok;
+  document.getElementById('sc-err').textContent = total - ok;
+  document.getElementById('sc-pct').textContent = pct + '%';
+  document.getElementById('sc-tot').textContent = total + '/20';
+
+  const n = niveles.find(x => pct >= x.min && pct <= x.max) || niveles[0];
+  document.getElementById('fc-badge-wrap').innerHTML = `<span class="fc-badge" style="background:${n.bg};color:${n.c}">${n.label}</span>`;
+  document.getElementById('fc-desc').textContent = n.desc;
+
+  // Generar plan individualizado
+  const planEl = document.getElementById('plan-items');
+  planEl.innerHTML = '';
+  const bloques = ['b1','b2','b3','b4'];
+  bloques.forEach(b => {
+    const bPct = bloqueTot[b] ? Math.round((bloquePcts[b]/bloqueTot[b])*100) : 0;
+    const nivel = bPct < 50 ? 'alta' : bPct < 75 ? 'media' : 'baja';
+    if (nivel !== 'baja' || pct < 80) {
+      const p = planes[b][nivel];
+      const div = document.createElement('div');
+      div.className = 'plan-item';
+      div.innerHTML = `<div class="plan-item-title">${p.titulo} (${bPct}% en este bloque)</div><div class="plan-item-text">${p.acciones.map(a=>'• '+a).join('<br>')}</div>`;
+      planEl.appendChild(div);
+    }
+  });
+
+  const nombre = document.getElementById('nombre').value;
+  const regional = document.getElementById('regional').value;
+  const pdv = document.getElementById('pdv').value;
+  const fecha = document.getElementById('fecha').value;
+
+  gData = {
+    nombre, regional, pdv, fecha, pct, nivel: n.label, ok, total,
+    timestamp: new Date().toISOString(),
+    b1: Math.round((bloquePcts.b1/Math.max(bloqueTot.b1,1))*100),
+    b2: Math.round((bloquePcts.b2/Math.max(bloqueTot.b2,1))*100),
+    b3: Math.round((bloquePcts.b3/Math.max(bloqueTot.b3,1))*100),
+    b4: Math.round((bloquePcts.b4/Math.max(bloqueTot.b4,1))*100)
+  };
+
+  document.getElementById('resultado').scrollIntoView({behavior:'smooth'});
+}
+
+function descargarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const nombre = gData.nombre || 'Promotor';
+  const fecha = gData.fecha || new Date().toLocaleDateString('es-CO');
+
+  doc.setFontSize(16); doc.setTextColor(15,110,86);
+  doc.text('Plan de trabajo individualizado', 20, 20);
+  doc.setFontSize(11); doc.setTextColor(0,0,0);
+  doc.text(`Promotor: ${nombre}`, 20, 32);
+  doc.text(`Regional: ${gData.regional || '—'}  |  PDV: ${gData.pdv || '—'}`, 20, 40);
+  doc.text(`Fecha: ${fecha}  |  Resultado: ${gData.pct}%  |  Nivel: ${gData.nivel}`, 20, 48);
+
+  doc.setDrawColor(15,110,86); doc.line(20, 54, 190, 54);
+
+  let y = 62;
+  const items = document.querySelectorAll('.plan-item');
+  items.forEach(item => {
+    const titulo = item.querySelector('.plan-item-title').textContent;
+    const texto = item.querySelector('.plan-item-text').textContent;
+    doc.setFontSize(12); doc.setTextColor(4,52,44); doc.setFont(undefined,'bold');
+    doc.text(titulo, 20, y); y += 8;
+    doc.setFontSize(10); doc.setTextColor(0,0,0); doc.setFont(undefined,'normal');
+    const lineas = doc.splitTextToSize(texto, 170);
+    lineas.forEach(l => { doc.text(l, 22, y); y += 6; });
+    y += 4;
+    if (y > 270) { doc.addPage(); y = 20; }
+  });
+
+  doc.save(`Plan_${nombre.replace(/ /g,'_')}_EvalVentas_${fecha}.pdf`);
+}
+
+function guardarDatos() {
+  const st = document.getElementById('save-status');
+  if (!gData.nombre) { st.textContent = 'Completa tu nombre antes de guardar.'; st.style.color = '#A32D2D'; return; }
+  const row = [gData.timestamp, gData.nombre, gData.regional, gData.pdv, gData.fecha, gData.pct+'%', gData.nivel, gData.ok, gData.total, gData.b1+'%', gData.b2+'%', gData.b3+'%', gData.b4+'%'];
+  st.textContent = 'Guardando...'; st.style.color = '#534AB7';
+  fetch(SHEET_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({tipo:'evaluacion_ventas', datos:row})})
+  .then(() => { st.textContent = 'Guardado en la base de datos.'; st.style.color = '#0F6E56'; })
+  .catch(() => { st.textContent = `Sin conexión. Resultado: ${gData.pct}% · ${gData.nivel}`; st.style.color = '#854F0B'; });
+}
+</script>
+</body>
+</html>

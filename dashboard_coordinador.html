@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Coordinador — CONVERTIR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;font-size:14px;color:#1a1a1a;background:#f0eff8;min-height:100vh;padding:1rem}
+.login-wrap{max-width:400px;margin:80px auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 20px rgba(83,74,183,.1)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo h1{font-size:24px;font-weight:700;color:#534AB7}
+.login-logo p{font-size:12px;color:#7F77DD;margin-top:4px}
+.login-wrap label{font-size:12px;color:#555;display:block;margin-bottom:4px;margin-top:12px}
+.login-wrap select,.login-wrap input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+.btn-login{width:100%;padding:12px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:20px}
+.login-err{font-size:12px;color:#A32D2D;margin-top:8px;text-align:center;display:none}
+.dash{display:none;max-width:900px;margin:0 auto}
+.dash-header{background:#534AB7;border-radius:12px;padding:16px;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.dash-header h2{color:#EEEDFE;font-size:15px;font-weight:600}
+.dash-header span{color:#AFA9EC;font-size:12px}
+.btn-logout{padding:6px 14px;background:rgba(255,255,255,.15);color:#EEEDFE;border:none;border-radius:8px;font-size:12px;cursor:pointer}
+.tabs{display:flex;gap:8px;margin-bottom:1rem}
+.tab{padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;background:#fff;border:1px solid #ddd;color:#555}
+.tab.active{background:#534AB7;color:#fff;border-color:#534AB7}
+.tabla-wrap{background:#fff;border-radius:12px;padding:16px;margin-bottom:1rem;overflow-x:auto}
+.tabla-title{font-size:14px;font-weight:600;margin-bottom:12px;color:#26215C}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:8px 10px;background:#534AB7;color:#fff;text-align:left;font-weight:500}
+td{padding:7px 10px;border-bottom:1px solid #f0f0f0}
+tr:hover td{background:#f8f7ff}
+.badge{padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500}
+.badge-dest{background:#E1F5EE;color:#085041}
+.badge-comp{background:#E6F1FB;color:#0C447C}
+.badge-proc{background:#FAEEDA;color:#633806}
+.badge-dev{background:#FCEBEB;color:#A32D2D}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:#fff;border-radius:10px;padding:12px;text-align:center}
+.stat-val{font-size:24px;font-weight:700;color:#534AB7}
+.stat-lbl{font-size:11px;color:#666;margin-top:2px}
+.filtros{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.filtros input,.filtros select{padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff}
+.btn-dl{padding:8px 16px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+.btn-plan{padding:8px 16px;background:#854F0B;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+.loading{text-align:center;padding:40px;color:#7F77DD;font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-logo">
+    <h1>CONVERTIR</h1>
+    <p>Acceso coordinadores — Spectrum Brands</p>
+  </div>
+  <label>Regional</label>
+  <select id="login-regional">
+    <option value="">— Selecciona tu regional —</option>
+    <option value="Antioquia">Antioquia</option>
+    <option value="Centro">Centro</option>
+    <option value="Eje Cafetero">Eje Cafetero</option>
+    <option value="Norte">Norte</option>
+    <option value="Occidente">Occidente</option>
+    <option value="Oriente">Oriente</option>
+  </select>
+  <label>Contraseña</label>
+  <input type="password" id="login-pass" placeholder="Contraseña de coordinador" onkeypress="if(event.key==='Enter')login()">
+  <button class="btn-login" onclick="login()">Ingresar</button>
+  <div class="login-err" id="login-err">Regional o contraseña incorrecta.</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dash" id="dash">
+  <div class="dash-header">
+    <div>
+      <h2 id="dash-title">Dashboard Coordinador</h2>
+      <span id="dash-sub">Cargando datos...</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Salir</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val" id="stat-total">—</div><div class="stat-lbl">Evaluaciones totales</div></div>
+    <div class="stat"><div class="stat-val" id="stat-prom">—</div><div class="stat-lbl">Promedio regional</div></div>
+    <div class="stat"><div class="stat-val" id="stat-dest">—</div><div class="stat-lbl">Destacados</div></div>
+    <div class="stat"><div class="stat-val" id="stat-dev">—</div><div class="stat-lbl">En desarrollo</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="cambiarTab('autoevaluacion',this)">Autoevaluaciones</div>
+    <div class="tab" onclick="cambiarTab('evaluacion_convertir',this)">Eval. CONVERTIR</div>
+    <div class="tab" onclick="cambiarTab('evaluacion_ventas',this)">Eval. Ventas</div>
+  </div>
+
+  <div class="filtros">
+    <input type="text" id="filtro-nombre" placeholder="Buscar por nombre..." oninput="filtrarTabla()">
+    <input type="date" id="filtro-desde" oninput="filtrarTabla()">
+    <input type="date" id="filtro-hasta" oninput="filtrarTabla()">
+    <button class="btn-dl" onclick="descargarExcel()">Descargar Excel</button>
+    <button class="btn-plan" onclick="generarPlanGrupal()">Plan grupal PDF</button>
+  </div>
+
+  <div class="tabla-wrap">
+    <div class="tabla-title" id="tabla-title">Resultados</div>
+    <div id="tabla-container"><div class="loading">Cargando datos...</div></div>
+  </div>
+</div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/TU_SCRIPT_ID_AQUI/exec';
+// Contraseñas locales (también validadas en el script)
+const passwords = {'Antioquia':'coord_ant_2026','Centro':'coord_cen_2026','Eje Cafetero':'coord_eje_2026','Norte':'coord_nor_2026','Occidente':'coord_occ_2026','Oriente':'coord_ori_2026'};
+let currentRegional = '';
+let currentTipo = 'autoevaluacion';
+let allData = [];
+let allHeaders = [];
+
+function login() {
+  const reg = document.getElementById('login-regional').value;
+  const pass = document.getElementById('login-pass').value;
+  if (!reg || passwords[reg] !== pass) {
+    document.getElementById('login-err').style.display = 'block';
+    return;
+  }
+  currentRegional = reg;
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+  document.getElementById('dash-title').textContent = `Dashboard — Regional ${reg}`;
+  cargarDatos();
+}
+
+function logout() {
+  document.getElementById('login-wrap').style.display = 'block';
+  document.getElementById('dash').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+}
+
+function cambiarTab(tipo, el) {
+  currentTipo = tipo;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  cargarDatos();
+}
+
+function cargarDatos() {
+  document.getElementById('tabla-container').innerHTML = '<div class="loading">Cargando datos...</div>';
+  document.getElementById('dash-sub').textContent = 'Conectando con la base de datos...';
+  const url = `${SHEET_URL}?tipo=${currentTipo}&regional=${encodeURIComponent(currentRegional)}&password=${encodeURIComponent(passwords[currentRegional])}`;
+  fetch(url)
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === 'error') throw new Error(data.message);
+    allHeaders = data.headers || [];
+    allData = data.datos || [];
+    renderTabla(allData);
+    actualizarStats(allData);
+    document.getElementById('dash-sub').textContent = `${allData.length} registros · Regional ${currentRegional} · Actualizado hace un momento`;
+  })
+  .catch(err => {
+    // Modo demo si no hay conexión
+    document.getElementById('tabla-container').innerHTML = `<div class="loading">Sin conexión al servidor. Configura el script de Google Sheets primero.<br><br><small>${err.message}</small></div>`;
+  });
+}
+
+function renderTabla(datos) {
+  if (!datos.length) { document.getElementById('tabla-container').innerHTML = '<div class="loading">No hay datos para esta regional aún.</div>'; return; }
+  let html = '<table><thead><tr>';
+  (allHeaders.length ? allHeaders : Object.keys(datos[0]||{})).slice(0,9).forEach(h => html += `<th>${h}</th>`);
+  html += '</tr></thead><tbody>';
+  datos.forEach(row => {
+    html += '<tr>';
+    row.slice(0,9).forEach((cell,i) => {
+      if (i === 5 || i === 6) { // porcentaje / nivel
+        const nivel = String(cell);
+        const cls = nivel.includes('Dest')?'badge-dest':nivel.includes('Comp')?'badge-comp':nivel.includes('proc')||nivel.includes('Proc')?'badge-proc':'badge-dev';
+        html += `<td><span class="badge ${cls}">${cell}</span></td>`;
+      } else {
+        html += `<td>${cell}</td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('tabla-container').innerHTML = html;
+  document.getElementById('tabla-title').textContent = `Resultados · ${datos.length} registros`;
+}
+
+function filtrarTabla() {
+  const nombre = document.getElementById('filtro-nombre').value.toLowerCase();
+  const desde = document.getElementById('filtro-desde').value;
+  const hasta = document.getElementById('filtro-hasta').value;
+  const nameIdx = allHeaders.indexOf('Nombre');
+  const fechaIdx = allHeaders.indexOf('Fecha');
+  let filtrado = allData.filter(row => {
+    if (nombre && nameIdx >= 0 && !String(row[nameIdx]).toLowerCase().includes(nombre)) return false;
+    if (desde && fechaIdx >= 0 && row[fechaIdx] < desde) return false;
+    if (hasta && fechaIdx >= 0 && row[fechaIdx] > hasta) return false;
+    return true;
+  });
+  renderTabla(filtrado);
+}
+
+function actualizarStats(datos) {
+  document.getElementById('stat-total').textContent = datos.length;
+  const pctIdx = allHeaders.indexOf('%_Final') >= 0 ? allHeaders.indexOf('%_Final') : allHeaders.indexOf('%_General');
+  if (pctIdx >= 0 && datos.length) {
+    const vals = datos.map(r => parseFloat(String(r[pctIdx]).replace('%',''))).filter(v => !isNaN(v));
+    const prom = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+    document.getElementById('stat-prom').textContent = prom + '%';
+  }
+  const nivelIdx = allHeaders.indexOf('Nivel') >= 0 ? allHeaders.indexOf('Nivel') : allHeaders.indexOf('Perfil');
+  if (nivelIdx >= 0) {
+    document.getElementById('stat-dest').textContent = datos.filter(r => String(r[nivelIdx]).includes('Dest')).length;
+    document.getElementById('stat-dev').textContent = datos.filter(r => String(r[nivelIdx]).includes('desarrollo')||String(r[nivelIdx]).includes('Desarr')).length;
+  }
+}
+
+function descargarExcel() {
+  if (!allData.length) { alert('No hay datos para descargar.'); return; }
+  let csv = allHeaders.join(',') + '\n';
+  allData.forEach(row => { csv += row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',') + '\n'; });
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `CONVERTIR_${currentRegional}_${currentTipo}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function generarPlanGrupal() {
+  if (!allData.length) { alert('No hay datos para generar el plan.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const fecha = new Date().toLocaleDateString('es-CO');
+
+  doc.setFontSize(16); doc.setTextColor(83,74,183);
+  doc.text('Plan grupal de trabajo — Regional ' + currentRegional, 20, 20);
+  doc.setFontSize(11); doc.setTextColor(0,0,0);
+  doc.text(`Generado: ${fecha}  |  Registros analizados: ${allData.length}  |  Tipo: ${currentTipo}`, 20, 30);
+  doc.line(20, 36, 190, 36);
+
+  // Calcular brechas colectivas
+  const pctIdx = allHeaders.findIndex(h => h.includes('General') || h.includes('Final'));
+  const nivelIdx = allHeaders.findIndex(h => h === 'Nivel' || h === 'Perfil');
+  let y = 44;
+
+  if (pctIdx >= 0) {
+    const vals = allData.map(r => parseFloat(String(r[pctIdx]).replace('%',''))).filter(v => !isNaN(v));
+    const prom = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+    const dist = {dest:0,comp:0,proc:0,dev:0};
+    if (nivelIdx >= 0) allData.forEach(r => {
+      const n = String(r[nivelIdx]);
+      if(n.includes('Dest'))dist.dest++; else if(n.includes('Comp'))dist.comp++; else if(n.includes('proc')||n.includes('Proc'))dist.proc++; else dist.dev++;
+    });
+    doc.setFontSize(13); doc.setTextColor(83,74,183); doc.setFont(undefined,'bold');
+    doc.text('Diagnóstico colectivo del equipo', 20, y); y+=8;
+    doc.setFontSize(11); doc.setTextColor(0,0,0); doc.setFont(undefined,'normal');
+    doc.text(`Promedio regional: ${prom}%`, 20, y); y+=6;
+    doc.text(`Destacados: ${dist.dest}  |  Competentes: ${dist.comp}  |  En proceso: ${dist.proc}  |  En desarrollo: ${dist.dev}`, 20, y); y+=10;
+  }
+
+  doc.setFontSize(13); doc.setTextColor(15,110,86); doc.setFont(undefined,'bold');
+  doc.text('Acciones de formación recomendadas para el equipo', 20, y); y+=8;
+  doc.setFont(undefined,'normal'); doc.setFontSize(11); doc.setTextColor(0,0,0);
+
+  const acciones = [
+    'Realizar sesión grupal de repaso de las etapas del Modelo CONVERTIR con énfasis en las etapas con menor puntaje promedio.',
+    'Implementar role plays semanales de 20 minutos al inicio de la jornada, rotando escenarios de diagnóstico de necesidades.',
+    'Asignar a los promotores Destacados como mentores de los promotores En Desarrollo durante el próximo mes.',
+    'Diseñar un banco de respuestas a las 10 objeciones más frecuentes del PDV y practicarlas en equipo.',
+    'Revisar los casos de devolución del período y analizar en cuál etapa del proceso falló la asesoría.',
+    'Programar acompañamiento en campo del coordinador a los 3 promotores con menor puntaje en el período.',
+    'Reconocer públicamente los avances de los promotores que mejoraron su nivel entre evaluaciones.'
+  ];
+  acciones.forEach(a => {
+    const lines = doc.splitTextToSize('• ' + a, 170);
+    lines.forEach(l => { doc.text(l, 22, y); y+=6; });
+    y+=2;
+    if (y > 270) { doc.addPage(); y = 20; }
+  });
+
+  y+=6;
+  doc.setFontSize(13); doc.setTextColor(83,74,183); doc.setFont(undefined,'bold');
+  doc.text('Detalle por promotor', 20, y); y+=8;
+  doc.setFont(undefined,'normal'); doc.setFontSize(10); doc.setTextColor(0,0,0);
+  const nameIdx = allHeaders.findIndex(h=>h==='Nombre');
+  const nivelI = allHeaders.findIndex(h=>h==='Nivel'||h==='Perfil');
+  const pctI = allHeaders.findIndex(h=>h.includes('General')||h.includes('Final'));
+  allData.slice(0,30).forEach(row => {
+    const nombre = nameIdx>=0?row[nameIdx]:'—';
+    const nivel = nivelI>=0?row[nivelI]:'—';
+    const pct = pctI>=0?row[pctI]:'—';
+    doc.text(`${nombre}  —  ${pct}  —  ${nivel}`, 22, y); y+=6;
+    if(y>270){doc.addPage();y=20;}
+  });
+
+  doc.save(`PlanGrupal_${currentRegional}_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+</script>
+</body>
+</html>
