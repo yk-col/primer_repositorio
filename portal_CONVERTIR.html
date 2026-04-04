@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal CONVERTIR — Spectrum Brands</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f0eff8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.portal{max-width:480px;width:100%}
+.logo{text-align:center;margin-bottom:1.5rem}
+.logo h1{font-size:28px;font-weight:700;color:#534AB7;letter-spacing:2px}
+.logo p{font-size:13px;color:#7F77DD;margin-top:4px}
+.card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 20px rgba(83,74,183,0.08);margin-bottom:1rem;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.card:hover{border-color:#534AB7;transform:translateY(-2px)}
+.card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px}
+.card-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.card-desc{font-size:12px;color:#666;line-height:1.5}
+.card-time{font-size:11px;font-weight:500;margin-top:8px;padding:3px 10px;border-radius:99px;display:inline-block}
+.c1 .card-icon{background:#EEEDFE;color:#534AB7}
+.c1 .card-title{color:#26215C}
+.c1 .card-time{background:#EEEDFE;color:#534AB7}
+.c2 .card-icon{background:#FAEEDA;color:#854F0B}
+.c2 .card-title{color:#412402}
+.c2 .card-time{background:#FAEEDA;color:#854F0B}
+.c3 .card-icon{background:#E1F5EE;color:#0F6E56}
+.c3 .card-title{color:#04342C}
+.c3 .card-time{background:#E1F5EE;color:#0F6E56}
+.coord-link{text-align:center;margin-top:1rem}
+.coord-link a{font-size:12px;color:#534AB7;text-decoration:none}
+.qr-section{background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 2px 20px rgba(83,74,183,0.08);margin-top:1rem}
+.qr-title{font-size:13px;color:#666;margin-bottom:12px}
+#qrcode{display:inline-block}
+.qr-url{font-size:10px;color:#999;margin-top:8px;word-break:break-all}
+</style>
+</head>
+<body>
+<div class="portal">
+  <div class="logo">
+    <h1>CONVERTIR</h1>
+    <p>Spectrum Brands · EFICACIA S.A.S. · Sistema de evaluación</p>
+  </div>
+
+  <div class="card c1" onclick="window.location='autoevaluacion_CONVERTIR.html'">
+    <div class="card-icon">★</div>
+    <div class="card-title">Autoevaluación de competencias</div>
+    <div class="card-desc">Evalúa tus habilidades blandas y duras como promotor consultivo. Recibirás tu perfil y plan de mejora personalizado.</div>
+    <span class="card-time">~10 minutos · 20 preguntas</span>
+  </div>
+
+  <div class="card c2" onclick="window.location='evaluacion_convertir.html'">
+    <div class="card-icon">▲</div>
+    <div class="card-title">Evaluación del Modelo CONVERTIR</div>
+    <div class="card-desc">Pon a prueba tu conocimiento y aplicación de las 9 etapas del modelo con casos prácticos reales del punto de venta.</div>
+    <span class="card-time">~15 minutos · 20 preguntas</span>
+  </div>
+
+  <div class="card c3" onclick="window.location='evaluacion_ventas.html'">
+    <div class="card-icon">◆</div>
+    <div class="card-title">Evaluación de conocimientos en ventas</div>
+    <div class="card-desc">Mide tus conocimientos generales sobre técnicas de venta, manejo de clientes y estrategias comerciales en el canal moderno.</div>
+    <span class="card-time">~15 minutos · 20 preguntas</span>
+  </div>
+
+  <div class="coord-link">
+    <a href="dashboard_coordinador.html">→ Acceso coordinadores</a>
+  </div>
+
+  <div class="qr-section">
+    <div class="qr-title">Comparte este portal con tu equipo</div>
+    <div id="qrcode"></div>
+    <div class="qr-url" id="qr-url-text"></div>
+  </div>
+</div>
+
+<script>
+const url = window.location.href;
+document.getElementById('qr-url-text').textContent = url;
+new QRCode(document.getElementById('qrcode'), {
+  text: url,
+  width: 160,
+  height: 160,
+  colorDark: '#534AB7',
+  colorLight: '#ffffff',
+  correctLevel: QRCode.CorrectLevel.M
+});
+</script>
+</body>
+</html>
