@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter', system-ui, sans-serif;
+  font-size:14px;
+  color:#1a1a1a;
+  background:#f9f8ff;
+  padding:1rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.option-placeholder {
+  font-size:12px;
+  color:var(--color-text-secondary,#666);
+  display:block;
+  margin-bottom:4px;
+}
+.wrap{max-width:680px;margin:0 auto}
+.header{background:#534AB7;border-radius:12px;padding:16px;margin-bottom:1rem}
+.header h2{
+  color:#EEEDFE;
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.header p{
+  color:#AFA9EC;
+  font-size:13px;
+  line-height:1.6;
+  font-weight:400;
+}
+.datos-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.datos-grid label{font-size:12px;color:var(--color-text-secondary,#666);display:block;margin-bottom:4px}
+.datos-grid input,.datos-pdv{width:100%;padding:8px 10px;border:1px solid var(--color-border-secondary,#ccc);border-radius:8px;font-size:13px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#1a1a1a)}
+.datos-pdv-wrap{margin-bottom:1rem}
+.pdv-wrap,.reg-wrap{margin-bottom:10px}
+select{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff}
+.inst{font-size:12px;color:var(--color-text-secondary,#666);padding:10px 14px;border-left:3px solid #534AB7;background:var(--color-background-secondary,#f5f5f5);margin-bottom:1rem;line-height:1.6;border-radius:0 8px 8px 0}
+.seccion{border:0.5px solid var(--color-border-tertiary,#e0e0e0);border-radius:12px;overflow:hidden;margin-bottom:1.25rem}
+.sec-hdr-b{background:#F5F4FE;padding:10px 14px}
+.sec-hdr-b .badge{background:#EEEDFE;color:#3C3489;font-size:10px;font-weight:500;padding:2px 9px;border-radius:99px;display:inline-block;margin-bottom:4px}
+.sec-hdr-b .sec-title{color:#26215C;font-size:13px;font-weight:500}
+.sec-hdr-d{background:#EBF8F3;padding:10px 14px}
+.sec-hdr-d .badge{background:#E1F5EE;color:#085041;font-size:10px;font-weight:500;padding:2px 9px;border-radius:99px;display:inline-block;margin-bottom:4px}
+.sec-hdr-d .sec-title{color:#04342C;font-size:13px;font-weight:500}
+.leyenda{display:flex;gap:12px;padding:6px 14px;border-top:0.5px solid var(--color-border-tertiary,#e0e0e0);background:var(--color-background-secondary,#f5f5f5);font-size:11px;color:var(--color-text-secondary,#666);flex-wrap:wrap}
+.pq{padding:10px 14px;border-top:0.5px solid var(--color-border-tertiary,#e0e0e0);display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
+.p-comp{font-size:10px;color:var(--color-text-tertiary,#999);margin-bottom:3px}
+.p-text{font-size:12px;line-height:1.5;color:var(--color-text-primary,#1a1a1a)}
+.escala{display:flex;gap:3px;flex-shrink:0;margin-top:2px}
+.escala label{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.escala input[type=radio]{width:14px;height:14px;cursor:pointer;accent-color:#534AB7}
+.escala span{font-size:10px;color:var(--color-text-tertiary,#999);width:14px;text-align:center}
+.btn-calc{width:100%;padding:12px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;margin-top:1rem}
+.btn-calc:hover{background:#3C3489}
+.resultados{border:0.5px solid var(--color-border-tertiary,#e0e0e0);border-radius:12px;padding:16px;margin-top:1rem;display:none}
+.res-title{font-size:14px;font-weight:500;margin-bottom:12px}
+.perfil-card{border:1.5px solid #534AB7;border-radius:12px;padding:14px;text-align:center;margin-bottom:12px;background:var(--color-background-secondary,#f5f5f5)}
+.pct-main{font-size:38px;font-weight:500;color:#534AB7}
+.pct-label{font-size:12px;color:var(--color-text-secondary,#666);margin-bottom:4px}
+.perfil-badge{display:inline-block;padding:4px 14px;border-radius:99px;font-size:13px;font-weight:500;margin:6px 0}
+.perfil-desc{font-size:12px;color:var(--color-text-secondary,#666);line-height:1.5;margin-top:6px}
+.warning-min{background:#FCEBEB;border:0.5px solid #A32D2D;border-radius:8px;padding:10px 12px;font-size:12px;color:#501313;margin-bottom:10px;display:none}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.stat-card{background:var(--color-background-secondary,#f5f5f5);border-radius:8px;padding:10px;text-align:center}
+.stat-val{font-size:20px;font-weight:500}
+.stat-lbl{font-size:11px;color:var(--color-text-secondary,#666);margin-top:2px}
+.hexagons-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.hex-section{text-align:center}
+.hex-title{font-size:12px;font-weight:500;margin-bottom:8px;color:var(--color-text-secondary,#666)}
+.hex-svg{width:100%;max-width:260px}
+.sheets-box{background:var(--color-background-secondary,#f5f5f5);border:0.5px solid var(--color-border-tertiary,#e0e0e0);border-radius:8px;padding:12px;margin-top:12px;font-size:12px;color:var(--color-text-secondary,#666);line-height:1.6}
+.sheets-box strong{color:var(--color-text-primary,#1a1a1a)}
+.btn-sheet{display:inline-block;margin-top:8px;padding:7px 14px;background:#0F6E56;color:#fff;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2>Encuesta de autoevaluación — Modelo CONVERTIR</h2>
+  <p>Spectrum Brands · EFICACIA S.A.S. · 40 preguntas · Habilidades blandas y duras</p>
+</div>
+
+<div class="datos-grid">
+  <div><label>Nombre completo</label><input type="text" id="nombre" placeholder="Tu nombre"></div>
+  <div><label>Fecha</label><input type="date" id="fecha"></div>
+</div>
+</div class="Regional" >
+  <label style="font-size:12px;color:var(--color-text-secondary,#666);display:block;margin-bottom:4px">Regional</label>
+  <select class="datos-reg" id="regional">
+    <option value="" class="option-placeholder">— Selecciona tu regional —</option>
+    <option value="Antioquia">Antioquia</option>
+    <option value="Centro">Centro</option>
+    <option value="Eje Cafetero">Eje Cafetero</option>
+    <option value="Norte">Norte</option>
+    <option value="Occidente">Occidente</option>
+    <option value="Oriente">Oriente</option>
+  </select>
+</div>
+<div class="Cadena">
+  <label style="font-size:12px;color:var(--color-text-secondary,#666);display:block;margin-bottom:4px">Cadena</label>
+  <select class="datos-cadena" id="cadena">
+    <option value="" class="option-placeholder">— Selecciona tu cadena —</option>
+    <option value="ALMACENES ÉXITO S.A">ALMACENES ÉXITO S.A</option>
+    <option value="ALMACENES MAXIMO S.A.S. PEPE GANGA">ALMACENES MAXIMO S.A.S. PEPE GANGA</option>
+    <option value="CENCOSUD COLOMBIA S.A.">CENCOSUD COLOMBIA S.A.</option>
+    <option value="COLOMBIANA DE COMERCIO Y/O ALKOSTO S.A.">COLOMBIANA DE COMERCIO Y/O ALKOSTO S.A.</option>
+    <option value="Falabella">FALABELLA</option>
+    <option value="MECANELECTRO S.A.S">MECANELECTRO S.A.S</option>
+    <option value="SODIMAC COLOMBIA S.A.(HOMECENTER)">SODIMAC COLOMBIA S.A.(HOMECENTER)</option>
+    <option value="SUPERTIENDAS Y DROGUERIAS OLIMPICAS S.A.">SUPERTIENDAS Y DROGUERIAS OLIMPICAS S.A.</option>
+    <option value="PANAMERICANA">PANAMERICANA</option>
+  </select>
+</div>
+
+</div>
+<div class="datos-pdv-wrap">
+  <label style="font-size:12px;color:var(--color-text-secondary,#666);display:block;margin-bottom:4px">Punto de venta</label>
+  <input class="datos-pdv" type="text" id="pdv" placeholder="Nombre de la tienda">
+</div>
+
+
+<div class="inst">
+  Responde cada afirmación pensando en lo que realmente haces en el punto de venta, no en lo que crees que deberías hacer. No hay respuestas correctas o incorrectas: el propósito es identificar oportunidades de crecimiento.<br>
+  <strong>1 = Nunca · 2 = Pocas veces · 3 = A veces · 4 = Casi siempre · 5 = Siempre</strong>
+</div>
+
+<div class="seccion" id="sec-blandas">
+  <div class="sec-hdr-b">
+    <div class="badge">Habilidades blandas</div>
+    <div class="sec-title">10 Competencias interpersonales — 2 Preguntas por competencia</div>
+  </div>
+  <div class="leyenda"><span>1 Nunca</span><span>·</span><span>2 Pocas veces</span><span>·</span><span>3 A veces</span><span>·</span><span>4 Casi siempre</span><span>·</span><span>5 Siempre</span></div>
+  <div id="b-container"></div>
+</div>
+
+<div class="seccion" id="sec-duras">
+  <div class="sec-hdr-d">
+    <div class="badge">Habilidades duras</div>
+    <div class="sec-title">10 Competencias técnicas — 2 Preguntas por competencia</div>
+  </div>
+  <div class="leyenda"><span>1 Nunca</span><span>·</span><span>2 Pocas veces</span><span>·</span><span>3 A veces</span><span>·</span><span>4 Casi siempre</span><span>·</span><span>5 Siempre</span></div>
+  <div id="d-container"></div>
+</div>
+
+<button class="btn-calc" onclick="calcular()">Ver mis resultados</button>
+
+<div class="resultados" id="resultados">
+  <div class="res-title">Perfil de resultados</div>
+  <div class="warning-min" id="warning-min">Respondiste muy pocas preguntas. Para obtener un resultado válido debes responder al menos 32 de las 40 preguntas (80%).</div>
+  <div id="resultado-valido">
+    <div class="perfil-card">
+      <div class="pct-label">Promedio general ponderado</div>
+      <div class="pct-main" id="pct-main">—</div>
+      <div id="perfil-badge-wrap"></div>
+      <div class="perfil-desc" id="perfil-desc"></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val" id="stat-b" style="color:#534AB7">—</div><div class="stat-lbl">Habilidades blandas</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-d" style="color:#0F6E56">—</div><div class="stat-lbl">Habilidades duras</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-r">—</div><div class="stat-lbl">Respondidas</div></div>
+    </div>
+    <div class="hexagons-wrap">
+      <div class="hex-section">
+        <div class="hex-title">Habilidades blandas</div>
+        <svg class="hex-svg" id="hex-b" viewBox="0 0 260 260"></svg>
+      </div>
+      <div class="hex-section">
+        <div class="hex-title">Habilidades duras</div>
+        <svg class="hex-svg" id="hex-d" viewBox="0 0 260 260"></svg>
+      </div>
+    </div>
+    <div class="sheets-box">
+      <strong>Registro de datos</strong><br>
+      Tus respuestas se almacenarán en la base de datos del Modelo CONVERTIR. Si estás completando esta encuesta en papel, el coordinador ingresará los datos manualmente.
+      <br><button class="btn-sheet" onclick="enviarSheets()">Guardar mis resultados</button>
+      <div id="sheets-status" style="margin-top:6px;font-size:11px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const blandas=[
+  {comp:"Escucha activa",preguntas:[
+    "Cuando un cliente está hablando y menciona algo inesperado sobre su situación personal o de uso del producto, cambias tu recomendación en función de eso aunque ya tenías una en mente.",
+    "Después de que un cliente te explica lo que necesita, eres capaz de repetirle con tus propias palabras su situación antes de mostrarle cualquier producto."
+  ]},
+  {comp:"Empatía comercial",preguntas:[
+    "Cuando percibes que un cliente está incómodo o apurado, ajustas el ritmo y el tono de tu asesoría aunque eso signifique no llegar al cierre en esa visita.",
+    "Reconoces la diferencia entre un cliente que necesita información técnica y uno que necesita ser tranquilizado emocionalmente, y actúas diferente en cada caso."
+  ]},
+  {comp:"Comunicación adaptativa",preguntas:[
+    "Cuando un cliente usa términos técnicos del producto, adaptas tu lenguaje para hablar al mismo nivel sin sonar forzado ni condescendiente.",
+    "Cuando un cliente no entiende tu explicación, cambias completamente la forma en que describes el producto en lugar de repetir lo mismo más despacio."
+  ]},
+  {comp:"Pensamiento crítico",preguntas:[
+    "Cuando un cliente dice que quiere el producto más barato, te detienes a explorar si eso es lo que realmente necesita antes de mostrárselo.",
+    "Identificas cuándo la razón que da un cliente para no comprar es la razón real y cuándo hay una razón más profunda que no está diciendo."
+  ]},
+  {comp:"Generación de confianza",preguntas:[
+    "Cuando un producto de tu portafolio no es la mejor opción para lo que el cliente necesita, se lo dices aunque eso signifique perder la venta.",
+    "Si un cliente te hace una pregunta técnica que no sabes responder, lo reconoces directamente en lugar de dar una respuesta aproximada."
+  ]},
+  {comp:"Resiliencia comercial",preguntas:[
+    "Después de cinco interacciones seguidas sin cierre de venta, mantienes el mismo nivel de energía y atención con el sexto cliente.",
+    "Cuando un cliente te trata con hostilidad o descortesía, logras no afectar tu desempeño con los clientes siguientes."
+  ]},
+  {comp:"Influencia ética",preguntas:[
+    "Orientas al cliente hacia una decisión usando preguntas que lo llevan a sus propias conclusiones, sin decirle directamente qué debe comprar.",
+    "Distingues cuándo estás asesorando genuinamente y cuándo estás presionando, y te corriges solo cuando cruzas esa línea."
+  ]},
+  {comp:"Autoconciencia profesional",preguntas:[
+    "Al terminar una interacción en la que no cerraste la venta, identificas concretamente qué etapa del proceso no ejecutaste bien.",
+    "Cuando recibes retroalimentación negativa sobre tu forma de atender, la analizas sin ponerte a la defensiva antes de decidir si aplica o no."
+  ]},
+  {comp:"Gestión de situaciones difíciles",preguntas:[
+    "Cuando hay varios clientes esperando tu atención al mismo tiempo, los gestionas de forma que ninguno se siente ignorado.",
+    "Cuando un cliente regresa molesto porque el producto no cumplió sus expectativas, manejas la situación sin culpar al cliente ni al producto."
+  ]},
+  {comp:"Construcción de relación",preguntas:[
+    "Logras que un cliente que llegó solo a mirar se quede hablando contigo más de dos minutos sin que se sienta presionado.",
+    "El cliente siente, al final de la interacción, que la conversación fue sobre él y sus necesidades, no sobre el producto que querías venderle."
+  ]}
+];
+
+const duras=[
+  {comp:"Conocimiento de producto",preguntas:[
+    "Puedes explicar la diferencia técnica entre dos productos similares del portafolio en términos que el cliente entienda y que sean relevantes para su uso específico.",
+    "Cuando un cliente compara un producto tuyo con uno de la competencia que conoce, puedes responder con argumentos concretos de diferenciación sin atacar a la otra marca."
+  ]},
+  {comp:"Diagnóstico de necesidades",preguntas:[
+    "Antes de mostrar cualquier producto, haces al menos dos preguntas que te permiten entender el contexto real de uso del cliente.",
+    "Identificas cuándo la necesidad que el cliente expresa no coincide con la que realmente tiene, y reorientas la conversación hacia la necesidad real."
+  ]},
+  {comp:"Argumentación de valor",preguntas:[
+    "Cuando describes un producto, conectas cada característica técnica con un beneficio concreto para la vida cotidiana de ese cliente específico.",
+    "Puedes justificar por qué un producto más caro vale la diferencia de precio en términos de valor real para el cliente, sin que suene a argumento de venta."
+  ]},
+  {comp:"Manejo de objeciones",preguntas:[
+    "Cuando un cliente dice que está caro, exploras qué está comparando antes de responder con un argumento.",
+    "Cuando un cliente tiene una objeción válida que no puedes resolver, lo reconoces y redirigir la conversación hacia los aspectos donde sí puedes generar valor."
+  ]},
+  {comp:"Cierre consultivo",preguntas:[
+    "Propones el cierre solo cuando detectas señales claras de que el cliente ya tomó la decisión internamente, no antes.",
+    "Cuando un cliente dice 'lo pienso', identificas si es una objeción real o una salida educada, y actúas diferente en cada caso."
+  ]},
+  {comp:"Ejecución visual en PDV",preguntas:[
+    "Verificas que la exhibición de los productos esté en orden y que los precios sean visibles antes de iniciar cualquier interacción con clientes.",
+    "Aprovechas la ubicación y el orden de los productos para reforzar tu argumentación durante la asesoría."
+  ]},
+  {comp:"Comparación competitiva",preguntas:[
+    "Cuando un cliente menciona que vio el mismo artículo más barato en otra tienda, respondes con argumentos de valor diferencial sin descalificar la otra opción.",
+    "Conoces las debilidades y fortalezas de los productos de la competencia directa en las categorías que representas."
+  ]},
+  {comp:"Venta complementaria",preguntas:[
+    "Identificas oportunidades de ofrecer productos adicionales solo cuando la necesidad del cliente lo justifica genuinamente, no por aumentar el ticket.",
+    "Cuando ofreces un producto complementario, lo presentas como una solución a una necesidad que ya identificaste, no como una sugerencia genérica."
+  ]},
+  {comp:"Aplicación del proceso CONVERTIR",preguntas:[
+    "Pasas por todas las etapas del proceso de asesoría en cada interacción, adaptando el tiempo de cada una según el perfil del cliente.",
+    "Cuando una interacción se desvía del proceso que llevas, eres capaz de retomarlo sin que el cliente lo note."
+  ]},
+  {comp:"Testificación y evidencia",preguntas:[
+    "Usas experiencias de otros clientes o evidencias concretas para reforzar tu recomendación en el momento de mayor duda del cliente.",
+    "Las referencias que usas para generar confianza son creíbles y específicas, no genéricas como 'todos los clientes lo prefieren'."
+  ]}
+];
+
+let globalData={};
+
+function render(){
+  function item(p,tipo,ci,pi){
+    return `<div class="pq">
+      <div>
+        <div class="p-comp">${p.comp} · Pregunta ${pi}</div>
+        <div class="p-text">${p.preguntas[pi-1]}</div>
+      </div>
+      <div class="escala">
+        ${[1,2,3,4,5].map(v=>`<label><input type="radio" name="${tipo}-${ci}-${pi}" value="${v}"><span>${v}</span></label>`).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('b-container').innerHTML=blandas.map((b,i)=>b.preguntas.map((_,j)=>item(b,'b',i,j+1)).join('')).join('');
+  document.getElementById('d-container').innerHTML=duras.map((d,i)=>d.preguntas.map((_,j)=>item(d,'d',i,j+1)).join('')).join('');
+}
+render();
+
+function getVal(tipo,ci,pi){
+  const r=document.querySelector(`input[name="${tipo}-${ci}-${pi}"]:checked`);
+  return r?parseInt(r.value):null;
+}
+
+// Fractional radii for drawing concentric hexagon rings (25%, 50%, 75%, 100%)
+const HEXAGON_RINGS = [0.25, 0.5, 0.75, 1];
+
+function hexagonPath(cx,cy,r,valores,maxVal,color,labelFn){
+  const n=valores.length;
+  const angleStep=(2*Math.PI)/n;
+  const startAngle=-Math.PI/2;
+  let paths='';
+  HEXAGON_RINGS.forEach(f=>{
+    const pts=[];
+    for(let i=0;i<n;i++){
+      const a=startAngle+i*angleStep;
+      pts.push([cx+r*f*Math.cos(a),cy+r*f*Math.sin(a)]);
+    }
+    paths+=`<polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#ccc" stroke-width="0.5" opacity="0.6"/>`;
+  });
+  for(let i=0;i<n;i++){
+    const a=startAngle+i*angleStep;
+    paths+=`<line x1="${cx}" y1="${cy}" x2="${cx+r*Math.cos(a)}" y2="${cy+r*Math.sin(a)}" stroke="#ccc" stroke-width="0.5" opacity="0.6"/>`;
+  }
+  const dataPts=[];
+  valores.forEach((v,i)=>{
+    const a=startAngle+i*angleStep;
+    const rr=r*(v/maxVal);
+    dataPts.push([cx+rr*Math.cos(a),cy+rr*Math.sin(a)]);
+  });
+  paths+=`<polygon points="${dataPts.map(p=>p.join(',')).join(' ')}" fill="${color}" fill-opacity="0.25" stroke="${color}" stroke-width="1.5"/>`;
+  valores.forEach((_,i)=>{
+    const a=startAngle+i*angleStep;
+    const lx=cx+(r+18)*Math.cos(a);
+    const ly=cy+(r+18)*Math.sin(a);
+    const label=labelFn(i);
+    const words=label.split(' ');
+    const lines=[];
+    let cur='';
+    words.forEach(w=>{if((cur+w).length>10&&cur){lines.push(cur.trim());cur=w+' ';}else{cur+=w+' ';}});
+    if(cur.trim()) lines.push(cur.trim());
+    const textEls=lines.map((l,li)=>`<tspan x="${lx}" dy="${li===0?0:12}">${l}</tspan>`).join('');
+    const anchor=Math.cos(a)>0.1?'start':Math.cos(a)<-0.1?'end':'middle';
+    paths+=`<text x="${lx}" y="${ly-(lines.length-1)*6}" text-anchor="${anchor}" font-size="9" fill="currentColor" opacity="0.7">${textEls}</text>`;
+  });
+  return paths;
+}
+
+function dibujarHex(svgId,valores,maxVal,labels,color){
+  const svg=document.getElementById(svgId);
+  if(!svg) return;
+  const n=labels.length;
+  const cx=130,cy=130,r=88;
+  svg.innerHTML=hexagonPath(cx,cy,r,valores,maxVal,color,i=>labels[i]);
+}
+
+const perfiles=[
+  {min:0,max:65,label:'En desarrollo',c:'#A32D2D',bg:'#FCEBEB',desc:'Hay áreas prioritarias de crecimiento. El plan de formación del Modelo CONVERTIR está diseñado exactamente para este punto de partida.'},
+  {min:66,max:79,label:'En proceso',c:'#854F0B',bg:'#FAEEDA',desc:'Tienes una base real. Con práctica constante y las herramientas del modelo alcanzarás el siguiente nivel pronto.'},
+  {min:80,max:99,label:'Competente',c:'#185FA5',bg:'#E6F1FB',desc:'Sólido desempeño. El foco ahora es la consistencia: aplicar el proceso igual con cada cliente.'},
+  {min:100,max:100,label:'Destacado',c:'#0F6E56',bg:'#E1F5EE',desc:'Excelente nivel. Eres referente natural del equipo y puedes acompañar a otros en su proceso de mejora.'}
+];
+
+function calcular(){
+  const nombre=document.getElementById('nombre').value.trim();
+  const fecha=document.getElementById('fecha').value;
+  const pdv=document.getElementById('pdv').value.trim();
+  let totalB=0,respB=0,totalD=0,respD=0;
+  const scoreB=[],scoreD=[];
+  blandas.forEach((b,i)=>{
+    let s=0,c=0;
+    [1,2].forEach(j=>{const v=getVal('b',i,j);if(v!==null){s+=v;c++;totalB+=v;respB++;}});
+    scoreB.push(c?s/c:0);
+  });
+  duras.forEach((d,i)=>{
+    let s=0,c=0;
+    [1,2].forEach(j=>{const v=getVal('d',i,j);if(v!==null){s+=v;c++;totalD+=v;respD++;}});
+    scoreD.push(c?s/c:0);
+  });
+  const totalResp=respB+respD;
+  document.getElementById('resultados').style.display='block';
+  const warn=document.getElementById('warning-min');
+  const valido=document.getElementById('resultado-valido');
+  if(totalResp<0){
+    warn.style.display='block';
+    valido.style.display='none';
+    document.getElementById('resultados').scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  warn.style.display='none';
+  valido.style.display='block';
+  const pctB=respB?Math.round((totalB/(respB*5))*100):0;
+  const pctD=respD?Math.round((totalD/(respD*5))*100):0;
+  const pctTotal=Math.round(((totalB+totalD)/((respB+respD)*5))*100);
+  document.getElementById('pct-main').textContent=pctTotal+'%';
+  document.getElementById('stat-b').textContent=pctB+'%';
+  document.getElementById('stat-d').textContent=pctD+'%';
+  document.getElementById('stat-r').textContent=totalResp+'/40';
+  const p=perfiles.find(x=>pctTotal>=x.min&&pctTotal<=x.max)||perfiles[0];
+  document.getElementById('perfil-badge-wrap').innerHTML=`<span class="perfil-badge" style="background:${p.bg};color:${p.c}">${p.label}</span>`;
+  document.getElementById('perfil-desc').textContent=p.desc;
+  dibujarHex('hex-b',scoreB,100,blandas.map(b=>b.comp),'#534AB7');
+  dibujarHex('hex-d',scoreD,100,duras.map(d=>d.comp),'#0F6E56');
+  globalData={nombre,fecha,pdv,pctB,pctD,pctTotal,perfil:p.label,totalResp,timestamp:new Date().toISOString(),scoreB:scoreB.map(s=>s.toFixed(2)),scoreD:scoreD.map(s=>s.toFixed(2))};
+  document.getElementById('resultados').scrollIntoView({behavior:'smooth'});
+}
+
+function enviarSheets(){
+  const st=document.getElementById('sheets-status');
+  if(!globalData.nombre){st.textContent='Completa tu nombre antes de guardar.';st.style.color='#A32D2D';return;}
+  const row=[globalData.timestamp,globalData.nombre,globalData.fecha,globalData.pdv,globalData.pctB+'%',globalData.pctD+'%',globalData.pctTotal+'%',globalData.perfil,globalData.totalResp,...globalData.scoreB,...globalData.scoreD];
+  const SHEET_URL='https://script.google.com/macros/s/AKfycby-Gg5tkd-sPAMgv5xNugonP32TC8NYjdiNbftj0jPU6xo58InTG_dqO26fbtSq5BTJ/exec';
+  st.textContent='Enviando datos...';st.style.color='#534AB7';
+  fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'autoevaluacion',datos:row})})
+  .then(()=>{st.textContent='Datos guardados correctamente.';st.style.color='#0F6E56';})
+  .catch(()=>{st.textContent='No se pudo conectar. Guarda el resultado manualmente: '+globalData.pctTotal+'% · '+globalData.perfil;st.style.color='#854F0B';});
+}
+</script>
+</body>
+</html>
